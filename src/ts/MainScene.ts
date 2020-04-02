@@ -11,7 +11,7 @@ export class MainScene extends ORE.BaseScene {
 	private powerMatMesh: THREE.Mesh;
 	private standardMatMesh: THREE.Mesh;
 
-	private light: THREE.Light;
+	private moveLight: THREE.Light;
 
 	constructor() {
 
@@ -52,9 +52,8 @@ export class MainScene extends ORE.BaseScene {
 		this.scene.add( this.standardMatMesh );
 
 		let light: THREE.Light;
-
 		light = new THREE.DirectionalLight();
-		light.position.set( -1, 0.5, 0 );
+		light.position.set( - 1, 0.5, 0 );
 		light.intensity = 0.4;
 		this.scene.add( light );
 
@@ -62,12 +61,23 @@ export class MainScene extends ORE.BaseScene {
 		light.position.set( 1, 0.5, 0 );
 		this.scene.add( light );
 
+		this.moveLight = new THREE.PointLight();
+		this.moveLight.color = new THREE.Color( 0.2, 0.4, 1.0 );
+		this.moveLight.intensity = 0.5;
+		this.scene.add( this.moveLight );
+
+		let helper = new THREE.PointLightHelper( this.moveLight as THREE.PointLight, 0.1 );
+		this.scene.add( helper );
+
 
 	}
 
 	public animate( deltaTime: number ) {
 
 		this.controls.update();
+
+		let r = 1.3;
+		this.moveLight.position.set( Math.sin( this.time * 1.0 ) * r * 2.0, Math.cos( this.time * 2.0 ) * r, Math.sin( this.time * 1.5 ) * r );
 
 		this.powerMatMesh.rotateY( 0.01 );
 		this.standardMatMesh.rotateY( 0.01 );
