@@ -32,13 +32,6 @@ struct IncidentLight {
 	bool visible;
 };
 
-struct DirectionalLight {
-	vec3 direction;
-	vec3 color;
-};
-
-uniform DirectionalLight directionalLights[ NUM_DIR_LIGHTS ];
-
 $constants
 
 //法線分布関数
@@ -107,25 +100,71 @@ void RE_Direct( Geometry geo, Material mat, IncidentLight light, inout Reflected
 
 }
 
-IncidentLight directionalLightToIncidentLight( DirectionalLight inputLight ) {
 
-	IncidentLight light;
+float punctualLightIntensityToIrradianceFactor( float lightDistance, float cutoffDistance, float decayExponent) {
 
-	light.color = inputLight.color;
-	light.direction = inputLight.direction;
-	light.visible = true;
+	if ( cutoffDistance > 0.0 && decayExponent > 0.0 ) {
+
+		return pow( saturate( -lightDistance / cutoffDistance + 1.0 ), decayExponent );
+		
+	}
 	
-	return light;
+	return 1.0;
 	
 }
 
-float punctualLightIntensityToIrradianceFactor(const in float lightDistance, const in float cutoffDistance, const in float decayExponent) {
-  if (decayExponent > 0.0) {
-    return pow(saturate(-lightDistance / cutoffDistance + 1.0), decayExponent);
-  }
 
-  return 1.0;
-}
+#if NUM_DIR_LIGHTS > 0
+
+	struct DirectionalLight {
+		vec3 direction;
+		vec3 color;
+	};
+
+	uniform DirectionalLight directionalLights[ NUM_DIR_LIGHTS ];
+
+	IncidentLight directionalLightToIncidentLight( DirectionalLight dirLight ) {
+
+		IncidentLight light;
+
+		light.color = dirLight.color;
+		light.direction = dirLight.direction;
+		light.visible = true;
+		
+		return light;
+
+	}
+
+#endif
+
+#if NUM_POINT_LIGHTS > 0
+
+	struct PointLight {
+		vec3 position;
+		vec3 color;
+		float distance;
+		float decay;
+	};
+
+	uniform PointLight pointLights[ NUM_POINT_LIGHTS ];
+
+	IncidentLight pointLightToincidentLight( PointLight inputLight, Geometry geo ) {
+
+		IncidentLight light;
+
+		vec3 def = inputLight.position - geo.position;
+		float distance = length( def );
+		light.direction = normalize( def );
+
+		light.color = inputLight.color;
+		light.color *= punctualLightIntensityToIrradianceFactor( distance, inputLight.distance, inputLight.decay );
+		light.visible = true;
+		
+		return light;
+	
+	}
+
+#endif
 
 void main( void ) {
 
@@ -143,14 +182,29 @@ void main( void ) {
 
 	ReflectedLight ref;
 
-	//directional light
-	for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
+	#if NUM_DIR_LIGHTS > 0
 
-		DirectionalLight inputLight = directionalLights[ i ];
-		IncidentLight light = directionalLightToIncidentLight( inputLight );
-		RE_Direct( geo, mat, light, ref );
+		for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
 
-	}
+			DirectionalLight dirLight = directionalLights[ i ];
+			IncidentLight light = directionalLightToIncidentLight( dirLight );
+			RE_Direct( geo, mat, light, ref );
+
+		}
+	
+	#endif
+
+	#if NUM_POINT_LIGHTS > 0
+
+		for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {
+
+			PointLight pointLight = pointLights[ i ];
+			IncidentLight light = pointLightToincidentLight( pointLight, geo );
+			RE_Direct( geo, mat, light, ref );
+
+		}
+
+	#endif
 
 	vec3 outColor = ref.directSpecular + ref.directDiffuse + ref.indirectSpecular + ref.indirectDiffuse;
 

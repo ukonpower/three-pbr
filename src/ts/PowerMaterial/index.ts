@@ -84,6 +84,8 @@ export class PowerMaterial extends THREE.ShaderMaterial {
 			lights: true,
 		} );
 
+		// window.uniform = this.uniforms;
+		
 	}
 
 	public set roughness( value: number ) {

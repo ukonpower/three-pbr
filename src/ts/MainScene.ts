@@ -51,14 +51,17 @@ export class MainScene extends ORE.BaseScene {
 		this.standardMatMesh.position.set( 1, 0, 0 );
 		this.scene.add( this.standardMatMesh );
 
-		this.light = new THREE.DirectionalLight();
-		this.light.position.set( 1, 0.5, 0 );
-		this.scene.add( this.light );
+		let light: THREE.Light;
 
-		this.light = new THREE.DirectionalLight();
-		this.light.intensity = 0.4;
-		this.light.position.set( - 1, 0.5, 0 );
-		this.scene.add( this.light );
+		light = new THREE.DirectionalLight();
+		light.position.set( -1, 0.5, 0 );
+		light.intensity = 0.4;
+		this.scene.add( light );
+
+		light = new THREE.DirectionalLight();
+		light.position.set( 1, 0.5, 0 );
+		this.scene.add( light );
+
 
 	}
 
