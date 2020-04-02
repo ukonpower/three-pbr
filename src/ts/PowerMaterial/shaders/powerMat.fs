@@ -146,7 +146,7 @@ void main( void ) {
 	//directional light
 	for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
 
-		DirectionalLight inputLight = directionalLights[ 0 ];
+		DirectionalLight inputLight = directionalLights[ i ];
 		IncidentLight light = directionalLightToIncidentLight( inputLight );
 		RE_Direct( geo, mat, light, ref );
 
