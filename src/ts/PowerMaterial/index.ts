@@ -10,6 +10,7 @@ export declare interface PowerMaterialParams extends THREE.MaterialParameters {
 	uniforms?: any;
 	vertexShader?: string;
 	transparent?: boolean;
+	envMap?: THREE.CubeTexture;
 }
 
 export class PowerMaterial extends THREE.ShaderMaterial {
@@ -84,8 +85,6 @@ export class PowerMaterial extends THREE.ShaderMaterial {
 			lights: true,
 		} );
 
-		// window.uniform = this.uniforms;
-		
 	}
 
 	public set roughness( value: number ) {

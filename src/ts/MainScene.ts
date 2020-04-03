@@ -32,24 +32,11 @@ export class MainScene extends ORE.BaseScene {
 
 		this.controls = new OrbitControls( this.camera, this.renderer.domElement );
 
-		// let geo = new THREE.BoxGeometry( 1, 1, 1 );
-		let geo = new THREE.SphereBufferGeometry( 0.7, 20, 19 );
+		this.initScene();
 
-		this.powerMatMesh = new THREE.Mesh( geo, new PowerMaterial( {
-			roughness: 0.5,
-			metalness: 0.0,
-		} ) );
+	}
 
-		this.powerMatMesh.position.set( - 1, 0, 0 );
-		this.scene.add( this.powerMatMesh );
-
-		this.standardMatMesh = new THREE.Mesh( geo, new THREE.MeshStandardMaterial( {
-			roughness: 0.5,
-			metalness: 0.0,
-		} ) );
-
-		this.standardMatMesh.position.set( 1, 0, 0 );
-		this.scene.add( this.standardMatMesh );
+	private initScene() {
 
 		let light: THREE.Light;
 		light = new THREE.DirectionalLight();
@@ -69,6 +56,50 @@ export class MainScene extends ORE.BaseScene {
 		let helper = new THREE.PointLightHelper( this.moveLight as THREE.PointLight, 0.1 );
 		this.scene.add( helper );
 
+		let geo = new THREE.SphereBufferGeometry( 0.7, 20, 19 );
+
+		this.standardMatMesh = new THREE.Mesh( geo, new THREE.MeshStandardMaterial( {
+			roughness: 0.5,
+			metalness: 0.0,
+		} ) );
+
+		this.standardMatMesh.position.set( 1, 0, 0 );
+		this.scene.add( this.standardMatMesh );
+
+		/*------------------------
+			Create PowerMaterial
+		------------------------*/
+
+		let uni = {
+			envMap: {
+				value: null
+			}
+		};
+
+		this.powerMatMesh = new THREE.Mesh( geo, new PowerMaterial( {
+			roughness: 0.5,
+			metalness: 0.0,
+			uniforms: uni
+		} ) );
+
+		this.powerMatMesh.position.set( - 1, 0, 0 );
+		this.scene.add( this.powerMatMesh );
+
+		let loader = new THREE.CubeTextureLoader();
+		loader.load( [
+			'./assets/cube/Bridge2/posx.jpg',
+			'./assets/cube/Bridge2/negx.jpg',
+			'./assets/cube/Bridge2/posy.jpg',
+			'./assets/cube/Bridge2/negy.jpg',
+			'./assets/cube/Bridge2/posz.jpg',
+			'./assets/cube/Bridge2/negz.jpg',
+		], ( tex ) => {
+
+			this.scene.background = tex;
+
+			uni.envMap.value = tex;
+
+		} );
 
 	}
 
