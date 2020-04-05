@@ -77,7 +77,7 @@ export class MainScene extends ORE.BaseScene {
 		let helper = new THREE.PointLightHelper( this.moveLight as THREE.PointLight, 0.1 );
 		this.scene.add( helper );
 
-		let geo = new THREE.SphereBufferGeometry( 0.7, 10, 10 );
+		let geo = new THREE.SphereBufferGeometry( 0.7, 50, 39 );
 
 		this.standardMat = new THREE.MeshStandardMaterial( {
 			roughness: 0.2,
