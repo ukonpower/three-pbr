@@ -94,6 +94,7 @@ function brSync() {
 			baseDir: "public",
 			index: "index.html"
 		},
+		notify: false,
 		open: true
 	} );
 

@@ -10,69 +10,42 @@ export declare interface PowerMaterialParams extends THREE.MaterialParameters {
 	uniforms?: any;
 	vertexShader?: string;
 	transparent?: boolean;
+	useEnvMap?: boolean;
 	envMap?: THREE.CubeTexture;
 }
 
 export class PowerMaterial extends THREE.ShaderMaterial {
 
+	public envMap: THREE.CubeTexture;
+	public roughness: number;
+	public metalness: number;
+	public envMapIntensity: number;
+
 	constructor( param: PowerMaterialParams ) {
 
 		param.uniforms = param.uniforms || {};
 
+		let baseUni = THREE.UniformsUtils.merge(
+			[
+				THREE.UniformsLib.lights,
+				THREE.UniformsLib.envmap,
+				THREE.ShaderLib.physical.uniforms,
+			]
+		);
+
+		param.uniforms = ORE.UniformsLib.CopyUniforms( param.uniforms, baseUni );
 		param.uniforms = ORE.UniformsLib.CopyUniforms( param.uniforms, {
 			roughness: {
-				value: param.roughness != null ? param.roughness : 0.5
+				value: 0
 			},
 			metalness: {
-				value: param.metalness != null ? param.metalness : 0.5
+				value: 0
 			},
-			ambientLightColor: {
-				value: null
+			opacity: {
+				value: 0
 			},
-			lightProbe: {
-				value: null
-			},
-			directionalLights: {
-				value: null
-			},
-			directionalLightShadows: {
-				value: null
-			},
-			spotLights: {
-				value: null
-			},
-			spotLightShadows: {
-				value: null
-			},
-			rectAreaLights: {
-				value: null
-			},
-			pointLights: {
-				value: null
-			},
-			pointLightShadows: {
-				value: null
-			},
-			hemisphereLights: {
-				value: null
-			},
-			directionalShadowMap: {
-				value: null
-			},
-			directionalShadowMatrix: {
-				value: null
-			},
-			spotShadowMap: {
-				value: null
-			},
-			spotShadowMatrix: {
-				value: null
-			},
-			pointShadowMap: {
-				value: null
-			},
-			pointShadowMatrix: {
-				value: null
+			clearcoat: {
+				value: 0
 			}
 		} );
 
@@ -82,20 +55,34 @@ export class PowerMaterial extends THREE.ShaderMaterial {
 			vertexShader: param.vertexShader,
 			fragmentShader: powerMatFrag,
 			uniforms: param.uniforms,
-			lights: true,
+			lights: true
 		} );
 
+		this.roughness = param.roughness != undefined ? param.roughness : 0.5;
+		this.metalness = param.metalness != undefined ? param.metalness : 0.5;
+		this.envMapIntensity = 1.0;
+
+		window.uniforms = this.uniforms;
+
 	}
 
-	public set roughness( value: number ) {
+	// public set envMap( value: THREE.CubeTexture ) {
 
-		this.uniforms.roughness.value = value;
+	// 	this.uniforms.envMap = {
+	// 		value: value
+	// 	};
+
+	// }
+
+	public get isMeshStandardMaterial() {
+
+		return true;
 
 	}
 
-	public set metalness( value: number ) {
+	public get isMeshPhysicalMaterial() {
 
-		this.uniforms.metalness.value = value;
+		return true;
 
 	}
 

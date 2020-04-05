@@ -2,13 +2,20 @@ import * as ORE from 'ore-three-ts';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { PowerMaterial } from './PowerMaterial';
+import TweakPane from 'tweakpane';
 
 export class MainScene extends ORE.BaseScene {
 
 	private controls: OrbitControls;
+	private params: any;
+	private pane: TweakPane;
 
 	private renderer: THREE.WebGLRenderer;
+
+	private powerMat: PowerMaterial;
 	private powerMatMesh: THREE.Mesh;
+
+	private standardMat: THREE.MeshStandardMaterial;
 	private standardMatMesh: THREE.Mesh;
 
 	private moveLight: THREE.Light;
@@ -32,6 +39,17 @@ export class MainScene extends ORE.BaseScene {
 
 		this.controls = new OrbitControls( this.camera, this.renderer.domElement );
 
+		this.params = {
+			roughness: 0.0,
+			metalness: 0.0,
+			color: '#FFF',
+		};
+
+		this.pane = new TweakPane();
+		this.pane.addInput( this.params, 'roughness', { min: 0.0, max: 1.0 } );
+		this.pane.addInput( this.params, 'metalness', { min: 0.0, max: 1.0 } );
+		this.pane.addInput( this.params, 'color' );
+
 		this.initScene();
 
 	}
@@ -39,6 +57,9 @@ export class MainScene extends ORE.BaseScene {
 	private initScene() {
 
 		let light: THREE.Light;
+		// light = new THREE.AmbientLight();
+		// this.scene.add( light );
+
 		light = new THREE.DirectionalLight();
 		light.position.set( - 1, 0.5, 0 );
 		light.intensity = 0.4;
@@ -56,13 +77,14 @@ export class MainScene extends ORE.BaseScene {
 		let helper = new THREE.PointLightHelper( this.moveLight as THREE.PointLight, 0.1 );
 		this.scene.add( helper );
 
-		let geo = new THREE.SphereBufferGeometry( 0.7, 20, 19 );
+		let geo = new THREE.SphereBufferGeometry( 0.7, 10, 10 );
 
-		this.standardMatMesh = new THREE.Mesh( geo, new THREE.MeshStandardMaterial( {
-			roughness: 0.5,
-			metalness: 0.0,
-		} ) );
+		this.standardMat = new THREE.MeshStandardMaterial( {
+			roughness: 0.2,
+			metalness: 1.0,
+		} );
 
+		this.standardMatMesh = new THREE.Mesh( geo, this.standardMat );
 		this.standardMatMesh.position.set( 1, 0, 0 );
 		this.scene.add( this.standardMatMesh );
 
@@ -76,14 +98,23 @@ export class MainScene extends ORE.BaseScene {
 			}
 		};
 
-		this.powerMatMesh = new THREE.Mesh( geo, new PowerMaterial( {
-			roughness: 0.5,
-			metalness: 0.0,
-			uniforms: uni
-		} ) );
+		this.powerMat = new PowerMaterial( {
+			roughness: 0.2,
+			metalness: 1.0,
+			uniforms: uni,
+			useEnvMap: true
+		} );
+
+		this.powerMatMesh = new THREE.Mesh( geo, this.powerMat );
 
 		this.powerMatMesh.position.set( - 1, 0, 0 );
 		this.scene.add( this.powerMatMesh );
+
+		this.loadTex();
+
+	}
+
+	private loadTex() {
 
 		let loader = new THREE.CubeTextureLoader();
 		loader.load( [
@@ -97,7 +128,11 @@ export class MainScene extends ORE.BaseScene {
 
 			this.scene.background = tex;
 
-			uni.envMap.value = tex;
+			this.powerMat.envMap = tex;
+			this.powerMat.needsUpdate = true;
+
+			this.standardMat.envMap = tex;
+			this.standardMat.needsUpdate = true;
 
 		} );
 
@@ -112,6 +147,12 @@ export class MainScene extends ORE.BaseScene {
 
 		this.powerMatMesh.rotateY( 0.01 );
 		this.standardMatMesh.rotateY( 0.01 );
+
+		this.powerMat.roughness = this.params.roughness;
+		this.powerMat.metalness = this.params.metalness;
+
+		this.standardMat.roughness = this.params.roughness;
+		this.standardMat.metalness = this.params.metalness;
 
 		this.renderer.render( this.scene, this.camera );
 
